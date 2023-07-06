@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DriftGT</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="slider-container">
+        <input type="range" class="slider vertical-slider" min="-255" max="255" value="0" id="vertical-slider">
+    </div>
+
+    <div class="slider-container">
+        <input type="range" class="slider" min="-255" max="255" value="0" id="horizontal-slider">
+    </div>
+
+    <div class="settings-container">
+        <button id="connect-button">Connect</button>
+        <button id="fullscreen-button">Fullscreen</button>
+        <button id="show-console-button">Console</button>
+        <button id="show-user-controlls-button">Show me bitches</button>
+
+        <div id="user-control-options-container" class="hide">
+            <button class="user-control-option" data-name="arrows" data-enabled="false">Enable arrows</button>
+            <button class="user-control-option" data-name="WSAD" data-enabled="false">Enable WSAD</button>
+            <button class="user-control-option enabled" data-name="touch" data-enabled="true">Disable touch</button>
+            <button class="user-control-option" data-name="gamepad" data-enabled="false">Enable gamepad</button>
+        </div>
+    </div>
+
+    <script src="./scripts.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,176 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333;
+    color: #fff;
+}
+
+
+/* ======== SETTINGS ======== */
+
+.settings-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+}
+
+button {
+    color: white;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    padding: 5px;
+}
+
+#connect-button {
+    background-color: #FD616C;
+}
+
+#fullscreen-button {
+    background-color: cadetblue;
+}
+
+#show-console-button {
+    background-color: #222453;
+}
+
+#show-user-controlls-button {
+    background-color: #8467E3;
+    width: 140px;
+}
+
+/* ======== USER CONTROL OPTIONS ======== */
+
+#user-control-options-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+    padding-top: 5px;
+}
+
+.user-control-option {
+    display: block;
+    margin-right: 0;
+    width: 140px;
+    background-color: #434343;
+}
+
+.user-control-option.enabled {
+    background-color: cadetblue;
+}
+
+.hide {
+    display: none !important;
+}
+
+.user-control-option.enabled[data-name="gamepad"]:not(.active) {
+    background-color: orange;
+}
+
+
+/* ======== SLIDER ======== */
+
+.slider-container {
+    width: 40%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-right: 8%;
+}
+
+.slider {
+    width: 100%;
+    position: relative;
+}
+
+.vertical-slider {
+    writing-mode: bt-lr;
+    transform: rotate(-90deg);
+    margin-top: 10%;
+}
+
+.slider::-webkit-slider-thumb {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: relative;
+    z-index: 9999;
+    transform: translateX(-50%) translateY(-50%) scale(4) !important;
+}
+
+.slider::-moz-range-thumb {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: relative;
+    z-index: 9999;
+    transform: translateX(-50%) translateY(-50%) scale(2) !important;
+}
+
+.slider::-ms-thumb {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: relative;
+    z-index: 9999;
+    transform: translateX(-50%) translateY(-50%) scale(2) !important;
+}
+
+
+/* Pogrubienie osi */
+.slider::before {
+    content: '';
+    width: 100%;
+    height: 8px;
+    background-color: #555;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+/* Stylizacja osi po przekroczeniu wartości przez kropkę */
+.slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background-color: #555;
+    position: relative;
+    z-index: 0;
+}
+
+.slider::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    background-color: #555;
+    position: relative;
+    z-index: 0;
+}
+
+.slider::-ms-track {
+    width: 100%;
+    height: 8px;
+    background-color: #555;
+    position: relative;
+    z-index: 0;
+}
+
+.slider::-moz-range-progress {
+    height: 8px;
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+}
