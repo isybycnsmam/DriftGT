@@ -1,10 +1,10 @@
 const url = 'ws://192.168.4.1:80/ws';
-const speedActivationOffset = 20;
-const turningActivationOffset = 20;
+const speedActivationOffset = 40;
+const turningActivationOffset = 40;
 const turningMotor = 1;
 const speedMotor = 0;
 const gamepadRefreshDelayMs = 100;
-const maxTurningSpeed = 128;
+const maxTurningSpeed = 180;
 
 const connectButton = document.getElementById('connect-button');
 const showConsoleButton = document.getElementById('show-console-button');
@@ -13,11 +13,13 @@ const showUserControlOptionsButton = document.getElementById('show-user-controll
 const userControlOptionsContainer = document.getElementById('user-control-options-container');
 const gamepadControllOptionButton = document.querySelector('.user-control-option[data-name="gamepad"]');
 
+const hornButton = document.getElementById("horn-button");
+const toggleLightsButton = document.getElementById("toggle-lights-button");
+
 const verticalSlider = document.getElementById('vertical-slider');
 const horizontalSlider = document.getElementById('horizontal-slider');
 
-
-// === managing connection process ===
+// === managing websocket ===
 
 var websocket;
 
@@ -59,31 +61,47 @@ connectButton.onclick = () => {
     }
 }
 
-// === handling driving controlls ===
-
-function handleDrivingCommand(motor, value) {
+function sendEncodedMessage(type, parameters) {
     if (websocket?.readyState !== WebSocket.OPEN) {
         return;
     }
 
-    var absValue = Math.abs(value);
-
-    if (absValue - turningActivationOffset < 20) {
-        // set direction to neutral and motor speed to 0
-        websocket.send(`${motor}0000`);
+    if (type === 'move') {
+        parameters.unshift(0);
+    }
+    else if (type === 'lights') {
+        parameters.unshift(1);
+    }
+    else if (type === 'horn') {
+        parameters.unshift(2);
     }
 
-    if (motor === turningMotor && absValue > 128) {
-        absValue = maxTurningSpeed;
-    } 
-
-    const direction = value > 0 ? '3' : '2'; // 3 - forward, 2 - backward
-    const speed = ('000' + absValue).slice(-3);
-    const message = `${motor}${direction}${speed}`;
-
+    const message = new Uint8Array(parameters);
     websocket.send(message);
 }
 
+// === handling driving controls ===
+
+function handleDrivingCommand(motor, value) {
+    var speed = Math.abs(value);
+
+    if (speed - turningActivationOffset < 0) {
+        // set direction to neutral and motor speed to 0
+        sendEncodedMessage('move', [motor, 0, 0]);
+        return;
+    }
+
+    if (motor === turningMotor && speed > 128) {
+        speed = maxTurningSpeed;
+    }
+
+    if (motor === speedMotor && speed > 128) {
+        speed = 140;
+    }
+
+    const direction = value > 0 ? 3 : 2; // 3 - forward, 2 - backward
+    sendEncodedMessage('move', [motor, direction, speed]);
+}
 
 // === handling user control options ===
 
@@ -111,6 +129,8 @@ function controlOptionChanged(event) {
     else if (name === 'touch') {
         horizontalSlider.disabled = isCurrentlyEnabled;
         verticalSlider.disabled = isCurrentlyEnabled;
+        hornButton.disabled = isCurrentlyEnabled;
+        toggleLightsButton.disabled = isCurrentlyEnabled;
     }
     else if (name === 'gamepad') {
         if (isCurrentlyEnabled) {
@@ -130,11 +150,48 @@ function controlOptionChanged(event) {
     target.innerText = (!isCurrentlyEnabled ? 'Disable ' : 'Enable ') + name;
 }
 
+// === handling features ===
+
+var isLightOn = false;
+var isHornOn = false;
+
+function toggleLights() {
+    isLightOn = !isLightOn;
+
+    if (isLightOn) {
+        toggleLightsButton.classList.add("enabled");
+    }
+    else {
+        toggleLightsButton.classList.remove("enabled");
+    }
+
+    const stateParameter = isLightOn ? 1 : 0;
+    sendEncodedMessage('lights', [stateParameter]);
+}
+
+function toggleHorn(state) {
+    if (isHornOn === state) {
+        return;
+    }
+
+    isHornOn = state;
+
+    if (state) {
+        hornButton.classList.add("enabled");
+    }
+    else {
+        hornButton.classList.remove("enabled");
+    }
+
+    sendEncodedMessage('horn', [state ? 1 : 0]);
+}
+
 
 // === gamepad controll ===
 
 var isGamepadLoopRunning = false;
 var gamepadLoopIntervalId;
+var wasLightButtonPressedLastTime = false;
 
 function enableGamepadControll() {
     // if gamepad is already connected
@@ -150,7 +207,7 @@ function disableGamepadControll() {
     window.removeEventListener("gamepadconnected", startGamepadLoop);
     window.removeEventListener("gamepaddisconnected", stopGamepadLoop);
     stopGamepadLoop();
-}   
+}
 
 function startGamepadLoop() {
     console.log("Gamepad connected!");
@@ -197,6 +254,20 @@ function handleGamepadInput() {
             verticalSlider.value = drivingBackwardsSpeed * -1;
             handleDrivingCommand(speedMotor, drivingBackwardsSpeed * -1);
         }
+
+        // horn
+        const aButtonPressed = gamepad.buttons[0].value;
+        toggleHorn(aButtonPressed == 1);
+
+        // lights
+        const bButtonPressed = gamepad.buttons[1].value;
+        if (bButtonPressed == 1 && !wasLightButtonPressedLastTime) {
+            wasLightButtonPressedLastTime = true;
+            toggleLights();
+        }
+        else {
+            wasLightButtonPressedLastTime = false;
+        }
     }
 }
 
@@ -220,7 +291,11 @@ function enableKeyboardControll(name) {
     }
     else {
         console.log(`Unknown keyboard control option to enable: '${name}'`);
+        return;
     }
+
+    hornButton.innerText = "Horn (space)";
+    toggleLightsButton.innerText = "Lights (L)";
 }
 
 function disableKeyboardControll(name) {
@@ -236,17 +311,33 @@ function disableKeyboardControll(name) {
     }
     else {
         console.log(`Unknown keyboard control option to disable: '${name}'`);
+        return;
     }
+
+    hornButton.innerText = "Horn";
+    toggleLightsButton.innerText = "Lights";
 }
 
 function onWsadKeyboardEvent(event) {
-    const updateType = updateIsPressedFromEvent(event, 'w', 's', 'a', 'd');
-    updateIsPressedVariablesFromEvent(updateType);
+    updateFeaturesFromEvent(event);
+    const updateType = updateIsPressedVariablesFromEvent(event, 'w', 's', 'a', 'd');
+    detectDrivingDirectionFromKeboard(updateType);
 }
 
 function onArrowsKeyboardEvent(event) {
-    const updateType = updateIsPressedFromEvent(event, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight');
-    updateIsPressedVariablesFromEvent(updateType);
+    updateFeaturesFromEvent(event);
+    const updateType = updateIsPressedVariablesFromEvent(event, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight');
+    detectDrivingDirectionFromKeboard(updateType);
+}
+
+function updateFeaturesFromEvent(event) {
+    const isPressed = event.type == 'keydown';
+    if (event.key === ' ') {
+        toggleHorn(isPressed);
+    }
+    else if (event.key === 'l' && isPressed) {
+        toggleLights();
+    }
 }
 
 function updateIsPressedVariablesFromEvent(event, forward, backward, left, right) {
@@ -269,6 +360,8 @@ function updateIsPressedVariablesFromEvent(event, forward, backward, left, right
         isRightPressed = isPressed;
         return 'turning';
     }
+
+    return "";
 }
 
 function detectDrivingDirectionFromKeboard(updateType) {
@@ -314,9 +407,6 @@ verticalSlider.addEventListener('input', () => {
 horizontalSlider.addEventListener('input', () => {
     handleDrivingCommand(turningMotor, horizontalSlider.value);
 });
-
-
-// === reseting sliders value after releasing ===
 
 ['mouseup', 'touchend'].forEach(evt => {
     verticalSlider.addEventListener(evt, () => {

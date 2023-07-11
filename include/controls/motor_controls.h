@@ -10,6 +10,8 @@ enum MotorAction
 };
 
 void init_motor_controls();
-void setMotor(int motor, MotorAction action, int speed);
+
+void setMotor(unsigned int motor, unsigned int action, unsigned int speed);
+bool validateSetMotorParameters(unsigned int motor, unsigned int actionId, unsigned int speed);
 
 #endif // MOTOR_CONTROLS
