@@ -9,9 +9,10 @@ enum MotorAction
     Backward = 3
 };
 
-void init_motor_controls();
+void initMotorControls();
 
-void setMotor(unsigned int motor, unsigned int action, unsigned int speed);
-bool validateSetMotorParameters(unsigned int motor, unsigned int actionId, unsigned int speed);
+void turnOffAllMotors();
+void setMotor(unsigned int motor_index, unsigned int action, unsigned int speed);
+bool validateSetMotorParameters(unsigned int motor_index, unsigned int action, unsigned int speed);
 
 #endif // MOTOR_CONTROLS

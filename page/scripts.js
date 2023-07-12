@@ -4,7 +4,8 @@ const turningActivationOffset = 40;
 const turningMotor = 1;
 const speedMotor = 0;
 const gamepadRefreshDelayMs = 100;
-const maxTurningSpeed = 180;
+const maxTurningValue = 180;
+const maxSpeedingValue = 255;
 
 const connectButton = document.getElementById('connect-button');
 const showConsoleButton = document.getElementById('show-console-button');
@@ -15,17 +16,28 @@ const gamepadControllOptionButton = document.querySelector('.user-control-option
 
 const hornButton = document.getElementById("horn-button");
 const toggleLightsButton = document.getElementById("toggle-lights-button");
+const lightsColorPicker = document.getElementById("lights-color-picker");
 
 const verticalSlider = document.getElementById('vertical-slider');
 const horizontalSlider = document.getElementById('horizontal-slider');
 
+var websocket;
+var isLightOn = false;
+var isHornOn = false;
+var lightColor = [74, 156, 255];
+
+var isGamepadLoopRunning = false;
+var gamepadLoopIntervalId;
+var wasLightButtonPressedLastTime = false;
+
+var isUpPressed = false;
+var isDownPressed = false;
+var isLeftPressed = false;
+var isRightPressed = false;
+
 // === managing websocket ===
 
-var websocket;
-
 function openWebSocket() {
-    console.log("Initializing websocket");
-
     console.log("Connecting to websocket");
     connectButton.innerText = "Connecting...";
     connectButton.style.backgroundColor = '#6687E2';
@@ -62,25 +74,23 @@ connectButton.onclick = () => {
 }
 
 function sendEncodedMessage(type, parameters) {
-    if (websocket?.readyState !== WebSocket.OPEN) {
+    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
         return;
     }
 
+    let message;
     if (type === 'move') {
-        parameters.unshift(0);
-    }
-    else if (type === 'lights') {
-        parameters.unshift(1);
-    }
-    else if (type === 'horn') {
-        parameters.unshift(2);
+        message = new Uint8Array([0, ...parameters]);
+    } else if (type === 'lights') {
+        message = new Uint8Array([1, ...parameters]);
+    } else if (type === 'horn') {
+        message = new Uint8Array([2, ...parameters]);
     }
 
-    const message = new Uint8Array(parameters);
     websocket.send(message);
 }
 
-// === handling driving controls ===
+// === handling controls ===
 
 function handleDrivingCommand(motor, value) {
     var speed = Math.abs(value);
@@ -91,16 +101,41 @@ function handleDrivingCommand(motor, value) {
         return;
     }
 
-    if (motor === turningMotor && speed > 128) {
-        speed = maxTurningSpeed;
-    }
-
-    if (motor === speedMotor && speed > 128) {
-        speed = 140;
+    if (motor === turningMotor && speed > maxTurningValue) {
+        speed = maxTurningValue;
     }
 
     const direction = value > 0 ? 3 : 2; // 3 - forward, 2 - backward
     sendEncodedMessage('move', [motor, direction, speed]);
+}
+
+function setLights(state) {
+    if (state) {
+        toggleLightsButton.classList.add("enabled");
+        sendEncodedMessage('lights', lightColor);
+        console.log(lightColor);
+    }
+    else {
+        toggleLightsButton.classList.remove("enabled");
+        sendEncodedMessage('lights', [0, 0, 0]);
+    }
+}
+
+function setHorn(state) {
+    if (isHornOn === state) {
+        return;
+    }
+
+    isHornOn = state;
+
+    if (state) {
+        hornButton.classList.add("enabled");
+    }
+    else {
+        hornButton.classList.remove("enabled");
+    }
+
+    sendEncodedMessage('horn', [state ? 1 : 0]);
 }
 
 // === handling user control options ===
@@ -127,10 +162,7 @@ function controlOptionChanged(event) {
         }
     }
     else if (name === 'touch') {
-        horizontalSlider.disabled = isCurrentlyEnabled;
-        verticalSlider.disabled = isCurrentlyEnabled;
-        hornButton.disabled = isCurrentlyEnabled;
-        toggleLightsButton.disabled = isCurrentlyEnabled;
+        toggleTouchControl(!isCurrentlyEnabled);
     }
     else if (name === 'gamepad') {
         if (isCurrentlyEnabled) {
@@ -141,7 +173,7 @@ function controlOptionChanged(event) {
         }
     }
     else {
-        console.warn(`Unknown option name`, event.target);
+        console.warn(`Unknown option name`);
         return;
     }
 
@@ -150,48 +182,7 @@ function controlOptionChanged(event) {
     target.innerText = (!isCurrentlyEnabled ? 'Disable ' : 'Enable ') + name;
 }
 
-// === handling features ===
-
-var isLightOn = false;
-var isHornOn = false;
-
-function toggleLights() {
-    isLightOn = !isLightOn;
-
-    if (isLightOn) {
-        toggleLightsButton.classList.add("enabled");
-    }
-    else {
-        toggleLightsButton.classList.remove("enabled");
-    }
-
-    const stateParameter = isLightOn ? 1 : 0;
-    sendEncodedMessage('lights', [stateParameter]);
-}
-
-function toggleHorn(state) {
-    if (isHornOn === state) {
-        return;
-    }
-
-    isHornOn = state;
-
-    if (state) {
-        hornButton.classList.add("enabled");
-    }
-    else {
-        hornButton.classList.remove("enabled");
-    }
-
-    sendEncodedMessage('horn', [state ? 1 : 0]);
-}
-
-
 // === gamepad controll ===
-
-var isGamepadLoopRunning = false;
-var gamepadLoopIntervalId;
-var wasLightButtonPressedLastTime = false;
 
 function enableGamepadControll() {
     // if gamepad is already connected
@@ -263,7 +254,8 @@ function handleGamepadInput() {
         const bButtonPressed = gamepad.buttons[1].value;
         if (bButtonPressed == 1 && !wasLightButtonPressedLastTime) {
             wasLightButtonPressedLastTime = true;
-            toggleLights();
+            isLightOn = !isLightOn;
+            setLights(isLightOn);
         }
         else {
             wasLightButtonPressedLastTime = false;
@@ -272,11 +264,6 @@ function handleGamepadInput() {
 }
 
 // === keyboard controll ===
-
-var isUpPressed = false;
-var isDownPressed = false;
-var isLeftPressed = false;
-var isRightPressed = false;
 
 function enableKeyboardControll(name) {
     if (name === 'arrows') {
@@ -336,7 +323,8 @@ function updateFeaturesFromEvent(event) {
         toggleHorn(isPressed);
     }
     else if (event.key === 'l' && isPressed) {
-        toggleLights();
+        isLightOn = !isLightOn;
+        setLights(isLightOn);
     }
 }
 
@@ -396,9 +384,14 @@ function detectDrivingDirectionFromKeboard(updateType) {
     }
 }
 
+// === touch control ===
 
-// === sliders controll ===
-
+function toggleTouchControl(state) {
+    horizontalSlider.disabled = state;
+    verticalSlider.disabled = state;
+    hornButton.disabled = state;
+    toggleLightsButton.disabled = state;
+}
 
 verticalSlider.addEventListener('input', () => {
     handleDrivingCommand(speedMotor, verticalSlider.value);
@@ -419,6 +412,30 @@ horizontalSlider.addEventListener('input', () => {
     });
 });
 
+hornButton.onmousedown = () => {
+    setHorn(true);
+}
+
+hornButton.onmouseup = () => {
+    setHorn(false);
+}
+
+toggleLightsButton.onclick = () => {
+    isLightOn = !isLightOn;
+    setLights(isLightOn);
+}
+
+lightsColorPicker.onchange = (event) => {
+    const color = event.target.value;
+    const r = parseInt(color.substr(1, 2), 16);
+    const g = parseInt(color.substr(3, 2), 16);
+    const b = parseInt(color.substr(5, 2), 16);
+    lightColor = [r, g, b];
+
+    if (isLightOn) {
+        setLights(true)
+    }
+}
 
 // === handling full screen mode ===
 

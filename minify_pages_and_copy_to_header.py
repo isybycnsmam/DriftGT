@@ -66,7 +66,7 @@ file.write(f'''\
 
 
 {variables_declarations_section}
-void init_static_content_endpoints(AsyncWebServer *server) {{
+void initStaticContentEndpoints(AsyncWebServer *server) {{
 {endpoints_declarations_section}\
 }}
 

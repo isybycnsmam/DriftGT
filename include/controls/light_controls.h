@@ -1,9 +1,9 @@
 #ifndef LIGHT_CONTROLS
 #define LIGHT_CONTROLS
 
-void init_light_controls();
+void initLightControls();
 
-void set_lights(unsigned int color);
-void set_light(unsigned int index, unsigned int color);
+void setLights(unsigned char red, unsigned char green, unsigned char blue);
+void setLight(unsigned int pixel_index, unsigned char red, unsigned char green, unsigned char blue);
 
 #endif // LIGHT_CONTROLS

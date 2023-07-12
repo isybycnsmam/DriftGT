@@ -1,8 +1,8 @@
 #ifndef BUZZER_CONTROLS
 #define BUZZER_CONTROLS
 
-void init_buzzer_controls();
+void initBuzzerControls();
 
-void set_buzzer_state(bool state);
+void setBuzzerState(bool state);
 
 #endif // BUZZER_CONTROLS

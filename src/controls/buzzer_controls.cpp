@@ -3,11 +3,11 @@
 #include <Arduino.h>
 #include "config.h"
 
-void init_buzzer_controls() {
+void initBuzzerControls() {
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
 }
 
-void set_buzzer_state(bool state) {
+void setBuzzerState(bool state) {
     digitalWrite(BUZZER_PIN, state);
 }

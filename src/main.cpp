@@ -16,7 +16,7 @@
 DNSServer dnsServer;
 AsyncWebServer server(WEB_SERVER_PORT);
 
-void init_webservices()
+void initWebServices()
 {
 	Serial.printf("Initializing AP with wifi name: '%s'\r\n", SSID);
 	WiFi.softAP(SSID);
@@ -28,33 +28,33 @@ void init_webservices()
 	dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
 
 	Serial.println("Initializing websocket handlers");
-	init_websocket_handlers(&server);
+	initWebsocketHandlers(&server);
 
 	Serial.println("Initializing website handlers");
-	init_website_handlers(&server);
+	initWebsiteHandlers(&server);
 
 	Serial.println("Starting webserver");
 	server.begin();
 }
 
-void init_controls()
+void initControls()
 {
 	Serial.println("Initializing motors controls");
-	init_motor_controls();
+	initMotorControls();
 
 	Serial.println("Initializing light controls");
-	init_light_controls();
+	initLightControls();
 
 	Serial.println("Initializing buzzer controls");
-	init_buzzer_controls();
+	initBuzzerControls();
 }
 
 void setup()
 {
 	Serial.begin(BAUD_RATE);
 
-	init_webservices();
-	init_controls();
+	initWebServices();
+	initControls();
 
 	Serial.println("Setup complete");
 }

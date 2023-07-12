@@ -3,61 +3,69 @@
 #include <Arduino.h>
 #include "config.h"
 
-void init_motor_controls()
+void initMotorControls()
 {
-    for (unsigned int first_index = 0; first_index < MOTOR_COUNT; first_index++)
+    for (unsigned int motor_index = 0; motor_index < MOTOR_COUNT; motor_index++)
     {
-        for (unsigned int second_index = 0; second_index < 3; second_index++)
+        for (unsigned int pin_index = 0; pin_index < 3; pin_index++)
         {
-            const unsigned int pin = MOTOR_PINS[first_index][second_index];
+            const unsigned int pin = MOTOR_PINS[motor_index][pin_index];
             Serial.printf("Setting pin %d as OUTPUT\r\n", pin);
             pinMode(pin, OUTPUT);
         }
     }
 }
 
-void setMotor(unsigned int motor, unsigned int action, unsigned int speed)
+void turnOffAllMotors()
 {
-    if (!validateSetMotorParameters(motor, action, speed))
+    for (unsigned int motor_index = 0; motor_index < MOTOR_COUNT; motor_index++)
+    {
+        setMotor(motor_index, 0, 0);
+    }
+}
+
+void setMotor(unsigned int motor_index, unsigned int action, unsigned int speed)
+{
+    if (!validateSetMotorParameters(motor_index, action, speed))
     {
         return;
     }
 
-    const unsigned int pin1 = MOTOR_PINS[motor][0];
-    const unsigned int pin2 = MOTOR_PINS[motor][1];
-    const unsigned int pwm = MOTOR_PINS[motor][2];
-    
+    const unsigned int pin_one = MOTOR_PINS[motor_index][0];
+    const unsigned int pin_two = MOTOR_PINS[motor_index][1];
+    const unsigned int pin_pwm = MOTOR_PINS[motor_index][2];
+
     if (action == Forward)
     {
-        digitalWrite(pin1, HIGH);
-        digitalWrite(pin2, LOW);
-        analogWrite(pwm, speed);
+        digitalWrite(pin_one, HIGH);
+        digitalWrite(pin_two, LOW);
+        analogWrite(pin_pwm, speed);
     }
     else if (action == Backward)
     {
-        digitalWrite(pin1, LOW);
-        digitalWrite(pin2, HIGH);
-        analogWrite(pwm, speed);
+        digitalWrite(pin_one, LOW);
+        digitalWrite(pin_two, HIGH);
+        analogWrite(pin_pwm, speed);
     }
     else if (action == Stop)
     {
-        digitalWrite(pin1, HIGH);
-        digitalWrite(pin2, HIGH);
-        analogWrite(pwm, 255);
+        digitalWrite(pin_one, HIGH);
+        digitalWrite(pin_two, HIGH);
+        analogWrite(pin_pwm, 255);
     }
     else if (action == Neutral)
     {
-        digitalWrite(pin1, HIGH);
-        digitalWrite(pin2, HIGH);
-        analogWrite(pwm, 0);
+        digitalWrite(pin_one, HIGH);
+        digitalWrite(pin_two, HIGH);
+        analogWrite(pin_pwm, 0);
     }
 }
 
-bool validateSetMotorParameters(unsigned int motor, unsigned int action, unsigned int speed)
+bool validateSetMotorParameters(unsigned int motor_index, unsigned int action, unsigned int speed)
 {
-    if (motor >= MOTOR_COUNT)
+    if (motor_index >= MOTOR_COUNT)
     {
-        Serial.printf("Invalid motor index: '%d'\r\n", motor);
+        Serial.printf("Invalid motor index: '%d'\r\n", motor_index);
         return false;
     }
 

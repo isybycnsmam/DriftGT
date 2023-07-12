@@ -5,7 +5,7 @@
 
 extern AsyncWebSocket ws;
 
-void init_websocket_handlers(AsyncWebServer *server);
+void initWebsocketHandlers(AsyncWebServer *server);
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 void onDataEvent(uint8_t *data, size_t len);
 
