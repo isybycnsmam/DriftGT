@@ -1,4 +1,5 @@
 #include "controls/motor_controls.h"
+
 #include <Arduino.h>
 #include "config.h"
 
@@ -22,9 +23,9 @@ void setMotor(unsigned int motor, unsigned int action, unsigned int speed)
         return;
     }
 
-    int pin1 = MOTOR_PINS[motor][0];
-    int pin2 = MOTOR_PINS[motor][1];
-    int pwm = MOTOR_PINS[motor][2];
+    const unsigned int pin1 = MOTOR_PINS[motor][0];
+    const unsigned int pin2 = MOTOR_PINS[motor][1];
+    const unsigned int pwm = MOTOR_PINS[motor][2];
     
     if (action == Forward)
     {

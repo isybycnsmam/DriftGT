@@ -49,6 +49,7 @@ void onDataEvent(uint8_t *data, size_t len)
 
 	if (len == 2 && data[0] == 1) // lights command
 	{
+		// TODO: Add getting color from event data
 		unsigned int color = data[1] == 1 ? 0x4A9CFF : 0x000000;
 		set_lights(color);
 		return;
@@ -56,9 +57,10 @@ void onDataEvent(uint8_t *data, size_t len)
 
 	if (len == 2 && data[0] == 2) // buzzer command
 	{
-		set_buzzer(data[1] == 1);
+		bool buzzerOn = data[1] == 1;
+		set_buzzer_state(buzzerOn);
 		return;
 	}
 
-	Serial.println("Unknown command");
+	Serial.println("Unknown websocket event data");
 }

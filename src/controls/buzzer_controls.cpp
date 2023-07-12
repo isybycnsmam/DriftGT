@@ -8,6 +8,6 @@ void init_buzzer_controls() {
     digitalWrite(BUZZER_PIN, LOW);
 }
 
-void set_buzzer(bool state) {
+void set_buzzer_state(bool state) {
     digitalWrite(BUZZER_PIN, state);
 }

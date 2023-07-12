@@ -8,12 +8,12 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(LED_NUM_PIXELS, LED_DATA_PIN, NEO_RG
 void init_light_controls()
 {
     strip.begin();
-    set_lights(0x000000); // turn off lights
+    set_lights(0); // turn off lights
 }
 
 void set_lights(unsigned int color)
 {
-    for (int i = 0; i < LED_NUM_PIXELS; i++)
+    for (unsigned int i = 0; i < LED_NUM_PIXELS; i++)
     {
         set_light(i, color);
     }
