@@ -7,7 +7,7 @@ import sys
 import shutil
 
 SOURCE_FOLDER = './page'
-TARGET_FILE = 'include/static_website_content.h'
+TARGET_FILE = 'include/handlers/static_website_content.h'
 DECLARATION_NAME = 'STATIC_WEBSITE_CONTENT_H'
 FILES_TYPE_TO_CONTENT_TYPE = {
     '.html': 'text/html',
@@ -64,11 +64,13 @@ file.write(f'''\
 #ifndef {DECLARATION_NAME}
 #define {DECLARATION_NAME}
 
-{variables_declarations_section}
 
+{variables_declarations_section}
 void init_static_content_endpoints(AsyncWebServer *server) {{
 {endpoints_declarations_section}\
 }}
+
+
 #endif // {DECLARATION_NAME}
 ''')
 file.close()
