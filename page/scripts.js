@@ -143,6 +143,13 @@ function setHorn(state) {
 
 showUserControlOptionsButton.onclick = () => {
     userControlOptionsContainer.classList.toggle('hide');
+
+    if (userControlOptionsContainer.classList.contains('hide')) {
+        showUserControlOptionsButton.innerText = "Show controls";
+    }
+    else {
+        showUserControlOptionsButton.innerText = "Hide controls";
+    }
 }
 
 document.querySelectorAll('.user-control-option').forEach(element => {
@@ -242,9 +249,13 @@ function handleGamepadInput() {
             verticalSlider.value = drivingForwardSpeed;
             handleDrivingCommand(speedMotor, drivingForwardSpeed);
         }
-        else {
+        else if (drivingForwardSpeed < drivingBackwardsSpeed) {
             verticalSlider.value = drivingBackwardsSpeed * -1;
             handleDrivingCommand(speedMotor, drivingBackwardsSpeed * -1);
+        }
+        else {
+            verticalSlider.value = 0;
+            handleDrivingCommand(speedMotor, 0);
         }
 
         // horn
@@ -408,13 +419,13 @@ horizontalSlider.addEventListener('input', () => {
     });
 });
 
-hornButton.onmousedown = () => {
-    setHorn(true);
-}
+['mousedown', 'touchstart'].forEach(evt => {
+    hornButton.addEventListener(evt, () => setHorn(true));
+});
 
-hornButton.onmouseup = () => {
-    setHorn(false);
-}
+['mouseup', 'touchend'].forEach(evt => {
+    hornButton.addEventListener(evt, () => setHorn(false));
+});
 
 toggleLightsButton.onclick = () => {
     isLightOn = !isLightOn;
