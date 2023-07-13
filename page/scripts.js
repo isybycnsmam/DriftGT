@@ -139,6 +139,14 @@ function setHorn(state) {
     sendEncodedMessage('horn', [state ? 1 : 0]);
 }
 
+function resetControls() {
+    verticalSlider.value = 0;
+    horizontalSlider.value = 0;
+    handleDrivingCommand(turningMotor, 0);
+    handleDrivingCommand(speedMotor, 0);
+    setHorn(false);
+}
+
 // === handling user control options ===
 
 showUserControlOptionsButton.onclick = () => {
@@ -223,6 +231,7 @@ function stopGamepadLoop() {
         isGamepadLoopRunning = false;
         gamepadControllOptionButton.classList.remove('active');
         clearInterval(gamepadLoopIntervalId);
+        resetControls();
     }
 }
 
@@ -311,6 +320,7 @@ function disableKeyboardControll(name) {
 
     hornButton.innerText = "Horn";
     toggleLightsButton.innerText = "Lights";
+    resetControls();
 }
 
 function onWsadKeyboardEvent(event) {
@@ -398,6 +408,7 @@ function toggleTouchControl(state) {
     verticalSlider.disabled = !state;
     hornButton.disabled = !state;
     toggleLightsButton.disabled = !state;
+    resetControls();
 }
 
 verticalSlider.addEventListener('input', () => {
