@@ -4,15 +4,19 @@
 #include <ESPAsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 
-#include "motor_controls.h"
-#include "websocket_handlers.h"
-#include "website_handlers.h"
+#include "controls/motor_controls.h"
+#include "controls/light_controls.h"
+#include "controls/buzzer_controls.h"
+
+#include "handlers/websocket_handlers.h"
+#include "handlers/website_handlers.h"
+
 #include "config.h"
 
 DNSServer dnsServer;
 AsyncWebServer server(WEB_SERVER_PORT);
 
-void init_webservices()
+void initWebServices()
 {
 	Serial.printf("Initializing AP with wifi name: '%s'\r\n", SSID);
 	WiFi.softAP(SSID);
@@ -22,21 +26,35 @@ void init_webservices()
 
 	Serial.printf("Starting dns server on port: '%d'\r\n", DNS_PORT);
 	dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+
+	Serial.println("Initializing websocket handlers");
+	initWebsocketHandlers(&server);
+
+	Serial.println("Initializing website handlers");
+	initWebsiteHandlers(&server);
+
+	Serial.println("Starting webserver");
+	server.begin();
+}
+
+void initControls()
+{
+	Serial.println("Initializing motors controls");
+	initMotorControls();
+
+	Serial.println("Initializing light controls");
+	initLightControls();
+
+	Serial.println("Initializing buzzer controls");
+	initBuzzerControls();
 }
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(BAUD_RATE);
 
-	init_webservices();
-
-	init_websocket_handlers(&server);
-	init_website_handlers(&server);
-
-	Serial.println("Starting webserver");
-	server.begin();
-
-	init_motor_controls();
+	initWebServices();
+	initControls();
 
 	Serial.println("Setup complete");
 }
