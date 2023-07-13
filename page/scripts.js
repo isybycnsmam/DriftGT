@@ -110,10 +110,11 @@ function handleDrivingCommand(motor, value) {
 }
 
 function setLights(state) {
+    isLightOn = state;
+
     if (state) {
         toggleLightsButton.classList.add("enabled");
         sendEncodedMessage('lights', lightColor);
-        console.log(lightColor);
     }
     else {
         toggleLightsButton.classList.remove("enabled");
@@ -179,7 +180,7 @@ function controlOptionChanged(event) {
 
     target.dataset.enabled = !isCurrentlyEnabled;
     target.classList.toggle('enabled');
-    target.innerText = (!isCurrentlyEnabled ? 'Disable ' : 'Enable ') + name;
+    target.innerText = `${!isCurrentlyEnabled ? 'Disable' : 'Enable'} ${name}`;
 }
 
 // === gamepad controll ===
@@ -254,8 +255,7 @@ function handleGamepadInput() {
         const bButtonPressed = gamepad.buttons[1].value;
         if (bButtonPressed == 1 && !wasLightButtonPressedLastTime) {
             wasLightButtonPressedLastTime = true;
-            isLightOn = !isLightOn;
-            setLights(isLightOn);
+            setLights(!isLightOn);
         }
         else {
             wasLightButtonPressedLastTime = false;
@@ -320,11 +320,10 @@ function onArrowsKeyboardEvent(event) {
 function updateFeaturesFromEvent(event) {
     const isPressed = event.type == 'keydown';
     if (event.key === ' ') {
-        toggleHorn(isPressed);
+        setHorn(isPressed);
     }
     else if (event.key === 'l' && isPressed) {
-        isLightOn = !isLightOn;
-        setLights(isLightOn);
+        setLights(!isLightOn);
     }
 }
 
@@ -387,10 +386,10 @@ function detectDrivingDirectionFromKeboard(updateType) {
 // === touch control ===
 
 function toggleTouchControl(state) {
-    horizontalSlider.disabled = state;
-    verticalSlider.disabled = state;
-    hornButton.disabled = state;
-    toggleLightsButton.disabled = state;
+    horizontalSlider.disabled = !state;
+    verticalSlider.disabled = !state;
+    hornButton.disabled = !state;
+    toggleLightsButton.disabled = !state;
 }
 
 verticalSlider.addEventListener('input', () => {
