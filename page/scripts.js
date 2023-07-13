@@ -248,18 +248,15 @@ function handleGamepadInput() {
         }
 
         // horn
-        const aButtonPressed = gamepad.buttons[0].value;
-        toggleHorn(aButtonPressed == 1);
+        const aButtonPressed = gamepad.buttons[0].value == 1;
+        setHorn(aButtonPressed);
 
         // lights
         const bButtonPressed = gamepad.buttons[1].value;
         if (bButtonPressed == 1 && !wasLightButtonPressedLastTime) {
-            wasLightButtonPressedLastTime = true;
             setLights(!isLightOn);
         }
-        else {
-            wasLightButtonPressedLastTime = false;
-        }
+        wasLightButtonPressedLastTime = bButtonPressed;
     }
 }
 
@@ -402,12 +399,12 @@ horizontalSlider.addEventListener('input', () => {
 
 ['mouseup', 'touchend'].forEach(evt => {
     verticalSlider.addEventListener(evt, () => {
-        verticalSlider.value = 0;
         handleDrivingCommand(speedMotor, 0);
+        verticalSlider.value = 0;
     });
     horizontalSlider.addEventListener(evt, () => {
-        horizontalSlider.value = 0;
         handleDrivingCommand(turningMotor, 0);
+        horizontalSlider.value = 0;
     });
 });
 
