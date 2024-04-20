@@ -4,11 +4,8 @@ const turningActivationOffset = 40;
 const turningMotor = 1;
 const speedMotor = 0;
 const gamepadRefreshDelayMs = 100;
-const maxTurningValue = 180;
-const maxSpeedingValue = 255;
 
 const connectButton = document.getElementById('connect-button');
-const showConsoleButton = document.getElementById('show-console-button');
 const showUserControlOptionsButton = document.getElementById('show-user-controlls-button');
 
 const userControlOptionsContainer = document.getElementById('user-control-options-container');
@@ -99,10 +96,6 @@ function handleDrivingCommand(motor, value) {
         // set direction to neutral and motor speed to 0
         sendEncodedMessage('move', [motor, 0, 0]);
         return;
-    }
-
-    if (motor === turningMotor && speed > maxTurningValue) {
-        speed = maxTurningValue;
     }
 
     const direction = value > 0 ? 3 : 2; // 3 - forward, 2 - backward
