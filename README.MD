@@ -1,1 +1,1 @@
-npm i minify -g
+
